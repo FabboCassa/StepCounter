@@ -49,6 +49,10 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.res.ResourcesCompat
 import com.app.stepcounter.com.app.stepcounter.StepService
 import com.app.stepcounter.ui.theme.StepCounterTheme
+import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.concurrent.timer
+import kotlin.math.round
 
 
 class MainActivity : ComponentActivity() {
@@ -62,10 +66,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val stepCount by viewModel.steps.collectAsState()
+            val timeInMinutes by viewModel.time.collectAsState() // Aggiungi questo
 
             StepCounterTheme {
                 StepHomeScreen(
                     stepCount = stepCount,
+                    timeInMinutes = timeInMinutes, // Passa il tempo
                     onStartClick = { startStepService() }
                 )
             }
@@ -112,12 +118,16 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun StepHomeScreen(stepCount: Int, onStartClick: () -> Unit) {
+fun StepHomeScreen(
+    stepCount: Int,
+    timeInMinutes: Int, // Aggiungi questo parametro
+    onStartClick: () -> Unit
+) {
     val stepStats = listOf(
         StepStat("Passi", "$stepCount"),
-        StepStat("Kcal", "$stepCount"),
-        StepStat("Tempo", "10 min"),
-        StepStat("Distanza", "0.75 km"),
+        StepStat("Kcal", BigDecimal(stepCount*0.04).setScale(2, RoundingMode.HALF_EVEN).toString()),
+        StepStat("Tempo", "$timeInMinutes min"), // Usa il tempo reale
+        StepStat("Distanza", "${BigDecimal(stepCount*0.0008).setScale(2, RoundingMode.HALF_EVEN)} km"), // Calcolo più realistico
         StepStat("Altro", "Valore"),
         StepStat("Esempio", "123")
     )
@@ -157,7 +167,7 @@ fun StepHomeScreen(stepCount: Int, onStartClick: () -> Unit) {
             columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 400.dp), // imposta altezza max e rende scrollabile
+                .heightIn(max = 400.dp),
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -188,6 +198,7 @@ fun StepHomeScreenPreview() {
     StepCounterTheme {
         StepHomeScreen(
             stepCount = 100,
+            timeInMinutes = 3,
             onStartClick = {
             })
     }

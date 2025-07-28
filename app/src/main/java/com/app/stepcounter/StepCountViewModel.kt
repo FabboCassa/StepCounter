@@ -13,11 +13,16 @@ class StepCountViewModel(application: Application) : AndroidViewModel(applicatio
     private val prefs = application.getSharedPreferences("prefs", Context.MODE_PRIVATE)
 
     private val _steps = MutableStateFlow(prefs.getInt("steps", 0))
+    private val _time = MutableStateFlow(prefs.getInt("time", 0))
     val steps: StateFlow<Int> = _steps
+    val time: StateFlow<Int> = _time
 
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
         if (key == "steps") {
             _steps.value = sp.getInt(key, 0)
+        }
+        if (key == "time") {
+            _time.value = sp.getInt(key, 0)
         }
     }
 

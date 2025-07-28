@@ -14,6 +14,7 @@ localbroadcastmanager = "1.1.0"
 material = "1.8.3"
 okhttp = "5.1.0"
 ui = "1.8.3"
+firebasePerfKtx = "22.0.0"
 
 [libraries]
 androidx-activity-compose-v190 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
