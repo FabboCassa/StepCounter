@@ -28,7 +28,7 @@
         </activity>
 
         <service
-            android:name=".StepService"
+            android:name=".com.app.stepcounter.StepService"
             android:exported="false"
             android:foregroundServiceType="health"
             tools:ignore="MissingClass" />

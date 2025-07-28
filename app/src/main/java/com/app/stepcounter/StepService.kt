@@ -1,4 +1,4 @@
-package com.app.stepcounter
+package com.app.stepcounter.com.app.stepcounter
 
 import android.app.Notification
 import android.app.NotificationChannel
