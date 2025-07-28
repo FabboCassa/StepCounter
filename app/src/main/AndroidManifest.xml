@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
     <application
         android:allowBackup="true"
@@ -28,10 +28,9 @@
         </activity>
 
         <service
-            android:name=".com.app.stepcounter.StepService"
+            android:name=".data.service.StepService"
             android:exported="false"
-            android:foregroundServiceType="health"
-            tools:ignore="MissingClass" />
+            android:foregroundServiceType="health" />
 
     </application>
 

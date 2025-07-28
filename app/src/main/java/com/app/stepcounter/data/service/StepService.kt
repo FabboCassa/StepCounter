@@ -12,8 +12,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.app.stepcounter.data.local.StepPreferences
+import com.app.stepcounter.data.preferences.StepPreferencesProvider
 import java.util.Timer
 import java.util.TimerTask
 
@@ -32,10 +34,18 @@ class StepService : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
 
-        stepPreferences = StepPreferences(this)
+        stepPreferences = StepPreferencesProvider.getInstance(this)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        if (stepSensor == null) {
+            Log.e("StepService", "Sensore TYPE_STEP_COUNTER non disponibile!")
+        } else {
+            sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
+            Log.d("StepService", "Sensore registrato correttamente")
+        }
+
 
         stepSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
@@ -44,6 +54,7 @@ class StepService : Service(), SensorEventListener {
         startForegroundServiceWithNotification()
         startTimer()
     }
+
 
     private fun startTimer() {
         val startTime = stepPreferences.getStartTime()
@@ -87,6 +98,7 @@ class StepService : Service(), SensorEventListener {
             }
             val stepsSinceStart = (currentStepCount - baseStepCount).toInt()
             stepPreferences.updateSteps(stepsSinceStart)
+            Log.d("StepService", "Steps: $stepsSinceStart")
         }
     }
 
