@@ -1,4 +1,4 @@
-package com.app.stepcounter.com.app.stepcounter
+package com.app.stepcounter.data.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -6,35 +6,33 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.edit
+import com.app.stepcounter.data.local.StepPreferences
 import java.util.Timer
 import java.util.TimerTask
 
 class StepService : Service(), SensorEventListener {
 
+    private lateinit var stepPreferences: StepPreferences
+
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
     private var baseStepCount: Float = -1f
 
-    // Timer per il conteggio dei minuti
     private var timer: Timer? = null
-    private var startTime: Long = 0L
-    private lateinit var prefs: SharedPreferences
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        prefs = getSharedPreferences("prefs", MODE_PRIVATE)
+
+        stepPreferences = StepPreferences(this)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -48,29 +46,16 @@ class StepService : Service(), SensorEventListener {
     }
 
     private fun startTimer() {
-        // Recupera il tempo di inizio salvato o imposta quello attuale
-        startTime = prefs.getLong("start_time", System.currentTimeMillis())
-
-        // Se è la prima volta, salva il tempo di inizio
-        if (!prefs.contains("start_time")) {
-            prefs.edit { putLong("start_time", startTime) }
-        }
+        val startTime = stepPreferences.getStartTime()
 
         timer = Timer()
         timer?.schedule(object : TimerTask() {
             override fun run() {
-                updateTime()
+                val currentTime = System.currentTimeMillis()
+                val elapsedMinutes = ((currentTime - startTime) / 60000).toInt()
+                stepPreferences.updateTime(elapsedMinutes)
             }
-        }, 0, 60000) // Aggiorna ogni minuto (60000 ms)
-    }
-
-    private fun updateTime() {
-        val currentTime = System.currentTimeMillis()
-        val elapsedMinutes = ((currentTime - startTime) / 60000).toInt()
-
-        prefs.edit { putInt("time", elapsedMinutes) }
-
-        Log.d("StepService", "Tempo aggiornato: $elapsedMinutes minuti")
+        }, 0, 60000)
     }
 
     private fun startForegroundServiceWithNotification() {
@@ -101,10 +86,7 @@ class StepService : Service(), SensorEventListener {
                 baseStepCount = currentStepCount
             }
             val stepsSinceStart = (currentStepCount - baseStepCount).toInt()
-
-            prefs.edit { putInt("steps", stepsSinceStart) }
-
-            Log.d("StepService", "Passi aggiornati: $stepsSinceStart")
+            stepPreferences.updateSteps(stepsSinceStart)
         }
     }
 

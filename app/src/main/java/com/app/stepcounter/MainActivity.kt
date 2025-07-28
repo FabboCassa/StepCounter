@@ -45,34 +45,53 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.res.ResourcesCompat
-import com.app.stepcounter.com.app.stepcounter.StepService
+import com.app.stepcounter.data.local.StepPreferences
+import com.app.stepcounter.data.service.StepService
+import com.app.stepcounter.presentation.ui.home.StepHomeScreen
+import com.app.stepcounter.presentation.viewmodel.StepCountViewModel
 import com.app.stepcounter.ui.theme.StepCounterTheme
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.concurrent.timer
-import kotlin.math.round
-
+import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: StepCountViewModel by viewModels()
+
+    // Istanza globale per il service
+    private lateinit var stepPreferences: StepPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestPermissionsIfNeeded()
 
+        stepPreferences = StepPreferences(this)
+
         setContent {
-            val stepCount by viewModel.steps.collectAsState()
-            val timeInMinutes by viewModel.time.collectAsState() // Aggiungi questo
+            val stepData by viewModel.stepData.collectAsState()
+            val uiState by viewModel.uiState.collectAsState()
 
             StepCounterTheme {
                 StepHomeScreen(
-                    stepCount = stepCount,
-                    timeInMinutes = timeInMinutes, // Passa il tempo
-                    onStartClick = { startStepService() }
+                    stepData = stepData,
+                    uiState = uiState,
+                    onStartClick = {
+                        startStepService()
+                        viewModel.startTracking()
+                    },
+                    onStopClick = {
+                        stopStepService()
+                        viewModel.stopTracking()
+                    },
+                    onResetClick = {
+                        stopStepService()
+                        viewModel.resetData()
+                    },
+                    onErrorDismiss = { viewModel.clearError() }
                 )
             }
         }
@@ -87,11 +106,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun stopStepService() {
+        val intent = Intent(this, StepService::class.java)
+        stopService(intent)
+    }
+
     private fun requestPermissionsIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val permissionsToRequest = mutableListOf<String>()
 
-            if (checkSelfPermission(
+            if (ContextCompat.checkSelfPermission(
                     this,
                     android.Manifest.permission.ACTIVITY_RECOGNITION
                 ) != PackageManager.PERMISSION_GRANTED
@@ -100,7 +124,7 @@ class MainActivity : ComponentActivity() {
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                if (checkSelfPermission(
+                if (ContextCompat.checkSelfPermission(
                         this,
                         android.Manifest.permission.FOREGROUND_SERVICE_HEALTH
                     ) != PackageManager.PERMISSION_GRANTED
@@ -110,96 +134,9 @@ class MainActivity : ComponentActivity() {
             }
 
             if (permissionsToRequest.isNotEmpty()) {
-                requestPermissions(permissionsToRequest.toTypedArray(), 0)
+                requestPermissions(permissionsToRequest.toTypedArray(), 1001)
             }
         }
     }
 }
 
-
-@Composable
-fun StepHomeScreen(
-    stepCount: Int,
-    timeInMinutes: Int, // Aggiungi questo parametro
-    onStartClick: () -> Unit
-) {
-    val stepStats = listOf(
-        StepStat("Passi", "$stepCount"),
-        StepStat("Kcal", BigDecimal(stepCount*0.04).setScale(2, RoundingMode.HALF_EVEN).toString()),
-        StepStat("Tempo", "$timeInMinutes min"), // Usa il tempo reale
-        StepStat("Distanza", "${BigDecimal(stepCount*0.0008).setScale(2, RoundingMode.HALF_EVEN)} km"), // Calcolo più realistico
-        StepStat("Altro", "Valore"),
-        StepStat("Esempio", "123")
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(100.dp),
-            shape = RectangleShape
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = "Step Counter",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        Text(text = "Step Counter", fontSize = 30.sp)
-        Spacer(Modifier.height(16.dp))
-
-        Button(onClick = onStartClick) {
-            Text(text = "Start")
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 400.dp),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(stepStats) { stat ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(stat.label, fontSize = 20.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Text(stat.value, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-    }
-}
-
-data class StepStat(val label: String, val value: String)
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun StepHomeScreenPreview() {
-    StepCounterTheme {
-        StepHomeScreen(
-            stepCount = 100,
-            timeInMinutes = 3,
-            onStartClick = {
-            })
-    }
-}
