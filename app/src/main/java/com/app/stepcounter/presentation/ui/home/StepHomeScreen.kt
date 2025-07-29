@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.stepcounter.domain.model.StepData
@@ -47,7 +48,8 @@ fun StepHomeScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .height(120.dp)
+                .padding(0.dp, 16.dp,0.dp,0.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
@@ -176,4 +178,18 @@ fun StepHomeScreen(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun StepHomeScreenPreview() {
+    StepHomeScreen(
+        stepData = StepData(),
+        uiState = StepUiState(),
+        onStartClick = {},
+        onStopClick = {},
+        onResetClick = {},
+        onErrorDismiss = {}
+    )
+
 }
