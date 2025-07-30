@@ -19,7 +19,7 @@ fun BottomNavigationBar(
     onScreenSelected: (Screen) -> Unit
 ) {
     NavigationBar {
-        Screen.values().forEach { screen ->
+        Screen.entries.forEach { screen ->
             NavigationBarItem(
                 icon = {
                     Icon(

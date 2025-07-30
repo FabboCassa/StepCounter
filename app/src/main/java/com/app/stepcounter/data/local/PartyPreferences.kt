@@ -1,11 +1,13 @@
 package com.app.stepcounter.data.local
 
 import android.content.Context
+import android.util.Log
 import com.app.stepcounter.domain.model.PartyData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
+import androidx.core.content.edit
 
 
 class PartyPreferences(context: Context) {
@@ -27,9 +29,9 @@ class PartyPreferences(context: Context) {
 
     private fun saveParties(parties: List<PartyData>) {
         try {
-            prefs.edit().putString("party_list", json.encodeToString(parties)).apply()
+            prefs.edit { putString("party_list", json.encodeToString(parties)) }
         } catch (e: Exception) {
-            // Log error
+            Log.e("PartyPreferences", "Error saving parties", e)
         }
     }
 
