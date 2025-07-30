@@ -8,49 +8,95 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.app.stepcounter.data.local.StepPreferences
+import com.app.stepcounter.data.preferences.PartyPreferencesProvider
+import com.app.stepcounter.data.repository.PartyRepositoryImpl
 import com.app.stepcounter.data.service.StepService
 import com.app.stepcounter.presentation.ui.home.StepHomeScreen
+import com.app.stepcounter.presentation.ui.home.StepPartyListScreen
+import com.app.stepcounter.presentation.ui.navigation.BottomNavigationBar
+import com.app.stepcounter.presentation.ui.navigation.Screen
+import com.app.stepcounter.presentation.viewmodel.PartyViewModel
 import com.app.stepcounter.presentation.viewmodel.StepCountViewModel
 import com.app.stepcounter.ui.theme.StepCounterTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: StepCountViewModel by viewModels()
-
-    // Istanza globale per il service
-    private lateinit var stepPreferences: StepPreferences
+    // ViewModels
+    private val stepViewModel: StepCountViewModel by viewModels()
+    private lateinit var partyViewModel: PartyViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestPermissionsIfNeeded()
 
+        // Inizializza party dependencies
+        val partyPreferences = PartyPreferencesProvider.getInstance(this)
+        val partyRepository = PartyRepositoryImpl(partyPreferences)
+        partyViewModel = PartyViewModel(partyRepository)
+
         setContent {
-            val stepData by viewModel.stepData.collectAsState()
-            val uiState by viewModel.uiState.collectAsState()
+            var currentScreen by remember { mutableStateOf(Screen.Home) }
+
+            // States
+            val stepData by stepViewModel.stepData.collectAsState()
+            val stepUiState by stepViewModel.uiState.collectAsState()
+            val parties by partyViewModel.parties.collectAsState()
+            val partyUiState by partyViewModel.uiState.collectAsState()
 
             StepCounterTheme {
-                StepHomeScreen(
-                    stepData = stepData,
-                    uiState = uiState,
-                    onStartClick = {
-                        startStepService()
-                        viewModel.startTracking()
-                    },
-                    onStopClick = {
-                        stopStepService()
-                        viewModel.stopTracking()
-                    },
-                    onResetClick = {
-                        stopStepService()
-                        viewModel.resetData()
-                    },
-                    onErrorDismiss = { viewModel.clearError() }
-                )
+                Scaffold(
+                    bottomBar = {
+                        BottomNavigationBar(
+                            currentScreen = currentScreen,
+                            onScreenSelected = { currentScreen = it }
+                        )
+                    }
+                ) { paddingValues ->
+                    Box(modifier = Modifier.padding(paddingValues)) {
+                        when (currentScreen) {
+                            Screen.Home -> {
+                                StepHomeScreen(
+                                    stepData = stepData,
+                                    uiState = stepUiState,
+                                    onStartClick = {
+                                        startStepService()
+                                        stepViewModel.startTracking()
+                                    },
+                                    onStopClick = {
+                                        stopStepService()
+                                        stepViewModel.stopTracking()
+                                    },
+                                    onResetClick = {
+                                        stopStepService()
+                                        stepViewModel.resetData()
+                                    },
+                                    onErrorDismiss = { stepViewModel.clearError() }
+                                )
+                            }
+                            Screen.Parties -> {
+                                StepPartyListScreen(
+                                    parties = parties,
+                                    uiState = partyUiState,
+                                    onCreatePartyClick = {
+                                        // Gestisci creazione party
+                                    },
+                                    onPartyClick = { party ->
+                                        // Naviga al dettaglio party
+                                    },
+                                    onDeleteParty = { partyId ->
+                                        partyViewModel.deleteParty(partyId)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
