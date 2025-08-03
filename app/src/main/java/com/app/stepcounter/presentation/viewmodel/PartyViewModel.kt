@@ -92,15 +92,11 @@ class PartyViewModel(
             println("Messaggio WebSocket ricevuto nel ViewModel: $message")
 
             try {
-                // 1. Decodifica il messaggio JSON nell'oggetto ServerResponse
                 val serverResponse = Json.decodeFromString<ServerResponse>(message)
 
-                // 2. Controlla il tipo di azione ricevuta
                 if (serverResponse.type == "party_created" && serverResponse.payload != null) {
-                    // 3. Salva il nuovo party nel repository locale
+                    // Salva il party ricevuto dal server nel tuo repository.
                     repository.addParty(serverResponse.payload)
-                    // Fatto! La UI si aggiornerà automaticamente perché lo StateFlow
-                    // 'parties' è collegato al repository.
                 }
 
             } catch (e: Exception) {
