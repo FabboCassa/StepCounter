@@ -36,8 +36,7 @@ class MainActivity : ComponentActivity() {
         requestPermissionsIfNeeded()
 
         // Inizializza party dependencies
-        val partyPreferences = PartyPreferencesProvider.getInstance(this)
-        val partyRepository = PartyRepositoryImpl(partyPreferences)
+        val partyRepository = PartyRepositoryImpl()
         partyViewModel = PartyViewModel(partyRepository)
 
         setContent {
@@ -83,8 +82,11 @@ class MainActivity : ComponentActivity() {
                                 StepPartyListScreen(
                                     parties = parties,
                                     uiState = partyUiState,
+                                    // Modifica questa lambda per chiamare la nuova funzione
                                     onCreatePartyClick = {
-                                        // Gestisci creazione party
+                                        // Qui potresti mostrare un dialogo per chiedere il nome del party
+                                        // Per ora, usiamo un nome di default.
+                                        partyViewModel.createParty("Nuovo Super Party!")
                                     },
                                     onPartyClick = { party ->
                                         // Naviga al dettaglio party
