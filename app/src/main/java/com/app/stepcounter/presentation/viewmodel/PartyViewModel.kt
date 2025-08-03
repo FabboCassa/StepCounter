@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.stepcounter.domain.model.PartyData
 import com.app.stepcounter.domain.repository.PartyRepository
+import com.app.stepcounter.server.response.DeletePayload
 import com.app.stepcounter.server.response.ServerResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import java.util.UUID // <-- Importa per generare ID unici
 
 /**
@@ -89,14 +91,21 @@ class PartyViewModel(
      */
     override fun onWebSocketUpdate(message: String) {
         viewModelScope.launch {
-            println("Messaggio WebSocket ricevuto nel ViewModel: $message")
-
             try {
-                val serverResponse = Json.decodeFromString<ServerResponse>(message)
+                val json = Json { ignoreUnknownKeys = true }
+                // First, decode into the generic ServerResponse
+                val serverResponse = json.decodeFromString<ServerResponse>(message)
 
-                if (serverResponse.type == "party_created" && serverResponse.payload != null) {
-                    // Salva il party ricevuto dal server nel tuo repository.
-                    repository.addParty(serverResponse.payload)
+                if (serverResponse.payload == null) return@launch
+
+                // Now, based on the type, decode the payload into the specific class
+                if (serverResponse.type == "party_created") {
+                    val partyData = json.decodeFromJsonElement<PartyData>(serverResponse.payload)
+                    repository.addParty(partyData)
+
+                } else if (serverResponse.type == "party_deleted") {
+                    val deleteData = json.decodeFromJsonElement<DeletePayload>(serverResponse.payload)
+                    repository.removeParty(deleteData.partyId)
                 }
 
             } catch (e: Exception) {

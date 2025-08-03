@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.app.stepcounter.data.preferences.PartyPreferencesProvider
 import com.app.stepcounter.data.repository.PartyRepositoryImpl
 import com.app.stepcounter.data.service.StepService
+import com.app.stepcounter.database.AppDatabase
 import com.app.stepcounter.presentation.ui.home.StepHomeScreen
 import com.app.stepcounter.presentation.ui.home.StepPartyListScreen
 import com.app.stepcounter.presentation.ui.navigation.BottomNavigationBar
@@ -36,7 +37,8 @@ class MainActivity : ComponentActivity() {
         requestPermissionsIfNeeded()
 
         // Inizializza party dependencies
-        val partyRepository = PartyRepositoryImpl()
+        val database = AppDatabase.getInstance(this)
+        val partyRepository = PartyRepositoryImpl(database.partyDao())
         partyViewModel = PartyViewModel(partyRepository)
 
         setContent {
@@ -83,10 +85,8 @@ class MainActivity : ComponentActivity() {
                                     parties = parties,
                                     uiState = partyUiState,
                                     // Modifica questa lambda per chiamare la nuova funzione
-                                    onCreatePartyClick = {
-                                        // Qui potresti mostrare un dialogo per chiedere il nome del party
-                                        // Per ora, usiamo un nome di default.
-                                        partyViewModel.createParty("Nuovo Super Party!")
+                                    onCreatePartyClick = { partyName ->
+                                        partyViewModel.createParty(partyName)
                                     },
                                     onPartyClick = { party ->
                                         // Naviga al dettaglio party

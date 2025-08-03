@@ -24,7 +24,7 @@ import com.app.stepcounter.presentation.viewmodel.PartyUiState
 fun StepPartyListScreen(
     parties: List<PartyData>,
     uiState: PartyUiState,
-    onCreatePartyClick: () -> Unit,
+    onCreatePartyClick: (String) -> Unit,
     onPartyClick: (PartyData) -> Unit,
     onDeleteParty: (String) -> Unit
 ) {
@@ -124,8 +124,7 @@ fun StepPartyListScreen(
         CreatePartyDialog(
             onDismiss = { showCreateDialog = false },
             onConfirm = { name ->
-                onCreatePartyClick()
-                // Potresti passare il nome qui se necessario
+                onCreatePartyClick(name)
                 showCreateDialog = false
             }
         )
@@ -186,9 +185,9 @@ fun StepPartyListScreenPreview_Empty() {
 @Composable
 fun StepPartyListScreenPreview_WithParties() {
     val sampleParties = listOf(
-        PartyData(id = "1", name = "Party 1", participants = listOf("Alice", "Bob")),
-        PartyData(id = "2", name = "Party 2", participants = listOf("Carlo")),
-        PartyData(id = "3", name = "Party 3", participants = emptyList())
+        PartyData(id = "1", name = "Party 1", participants = listOf("Alice", "Bob"), createdAt = System.currentTimeMillis()),
+        PartyData(id = "2", name = "Party 2", participants = listOf("Charlie", "David"), createdAt = System.currentTimeMillis()),
+        PartyData(id = "3", name = "Party 3", participants = listOf("Eve", "Frank"), createdAt = System.currentTimeMillis())
     )
 
     StepPartyListScreen(
