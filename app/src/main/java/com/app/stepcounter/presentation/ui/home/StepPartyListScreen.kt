@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.stepcounter.domain.model.Participant
 import com.app.stepcounter.domain.model.PartyData
 import com.app.stepcounter.presentation.ui.components.StepPartyCard
 import com.app.stepcounter.presentation.viewmodel.PartyUiState
@@ -185,9 +186,9 @@ fun StepPartyListScreenPreview_Empty() {
 @Composable
 fun StepPartyListScreenPreview_WithParties() {
     val sampleParties = listOf(
-        PartyData(id = "1", name = "Party 1", participants = listOf("Alice", "Bob"), createdAt = System.currentTimeMillis()),
-        PartyData(id = "2", name = "Party 2", participants = listOf("Charlie", "David"), createdAt = System.currentTimeMillis()),
-        PartyData(id = "3", name = "Party 3", participants = listOf("Eve", "Frank"), createdAt = System.currentTimeMillis())
+        PartyData(id = "1", name = "Party 1", participants = listOf(Participant("1", "Alice", 1000), Participant("2", "Bob", 500)), createdAt = System.currentTimeMillis()),
+        PartyData(id = "2", name = "Party 2", participants = listOf(Participant("3", "Charlie", 800), Participant("4", "David", 1200)), createdAt = System.currentTimeMillis()),
+        PartyData(id = "3", name = "Party 3", participants = listOf(Participant("5", "Eve", 600), Participant("6", "Frank", 900)), createdAt = System.currentTimeMillis())
     )
 
     StepPartyListScreen(

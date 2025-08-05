@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.ui.tooling.preview.Preview
+import com.app.stepcounter.domain.model.Participant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,7 +128,7 @@ fun StepPartyCardPreview_WithParty() {
     val sampleParty = PartyData(
         id = "1",
         name = "Festa di Fabio",
-        participants = listOf("Alice", "Bob", "Carlo"),
+        participants = listOf(Participant("1", "Fabio", 1000), Participant("2", "Luca", 500)),
         createdAt = System.currentTimeMillis()
     )
     StepPartyCard(

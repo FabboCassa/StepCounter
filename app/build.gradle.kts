@@ -65,5 +65,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.gson)
+    implementation(libs.androidx.navigation.compose)
 
 }
