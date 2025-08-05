@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.stepcounter.data.local.UserPreferences
 import com.app.stepcounter.domain.model.Participant
 import com.app.stepcounter.domain.model.PartyData
 import com.app.stepcounter.domain.repository.PartyRepository
@@ -28,15 +29,19 @@ class PartyDetailViewModel(
     private val currentUser = Participant(userId = "user123", name = "Io")
 
     init {
-        // All'avvio, diciamo al repository di unirsi alla sessione del party
-        viewModelScope.launch {
-            repository.joinPartySession(partyId, currentUser)
+        UserPreferences.getUser()?.let { userProfile ->
+            val currentUser = Participant(userId = userProfile.id, name = userProfile.name)
+            viewModelScope.launch {
+                repository.joinPartySession(partyId, currentUser)
+            }
         }
     }
 
     fun updateMySteps(steps: Int) {
-        viewModelScope.launch {
-            repository.updateMySteps(partyId, currentUser.userId, steps)
+        UserPreferences.getUser()?.let { userProfile ->
+            viewModelScope.launch {
+                repository.updateMySteps(partyId, userProfile.id, steps)
+            }
         }
     }
 
@@ -51,7 +56,8 @@ class PartyDetailViewModel(
         val party = partyState.value ?: return
 
         // Cambia il dominio per usare il nuovo schema
-        val link = "https://stepcounter.app/join/${party.id}"
+        val domain = "https://stepcounter.app"
+        val link = "$domain/join/${party.id}"
 
 
         val intent = Intent(Intent.ACTION_SEND).apply {

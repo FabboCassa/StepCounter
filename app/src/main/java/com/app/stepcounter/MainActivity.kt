@@ -24,9 +24,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.app.stepcounter.data.local.UserPreferences
 import com.app.stepcounter.data.repository.PartyRepositoryImpl
+import com.app.stepcounter.data.service.StepService
 import com.app.stepcounter.database.AppDatabase
 import com.app.stepcounter.presentation.ui.home.PartyDetailScreen
+import com.app.stepcounter.presentation.ui.home.ProfileSetupScreen
 import com.app.stepcounter.presentation.ui.home.StepHomeScreen
 import com.app.stepcounter.presentation.ui.home.StepPartyListScreen
 import com.app.stepcounter.presentation.ui.navigation.BottomNavigationBar
@@ -63,6 +66,12 @@ class MainActivity : ComponentActivity() {
             val parties by partyViewModel.parties.collectAsState()
             val partyUiState by partyViewModel.uiState.collectAsState()
 
+            val startDestination = if (UserPreferences.getUser() == null) {
+                "profile_setup" // Se non c'è un utente, vai al setup
+            } else {
+                Screen.Home.route // Altrimenti, vai alla Home
+            }
+
             StepCounterTheme {
                 Scaffold(
                     bottomBar = {
@@ -79,17 +88,36 @@ class MainActivity : ComponentActivity() {
                 ) { paddingValues ->
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.Home.route,
+                        startDestination = startDestination,
                         modifier = Modifier.padding(paddingValues)
                     ) {
                         composable(Screen.Home.route) {
                             StepHomeScreen(
                                 stepData = stepData,
                                 uiState = stepUiState,
-                                onStartClick = { /* ... */ },
-                                onStopClick = { /* ... */ },
-                                onResetClick = { /* ... */ },
-                                onErrorDismiss = { /* ... */ }
+                                onStartClick = {
+                                    startStepService()
+                                    stepViewModel.startTracking()
+                                },
+                                onStopClick = {
+                                    stopStepService()
+                                    stepViewModel.stopTracking()
+                                },
+                                onResetClick = {
+                                    stopStepService()
+                                    stepViewModel.resetData()
+                                },
+                                onErrorDismiss = { stepViewModel.clearError() }
+                            )
+                        }
+
+                        composable("profile_setup") {
+                            ProfileSetupScreen(
+                                onProfileCreated = {
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo("profile_setup") { inclusive = true }
+                                    }
+                                }
                             )
                         }
 
@@ -110,7 +138,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("party_detail/{partyId}") {
-                            // Usiamo una factory inline per creare il nostro ViewModel
                             val partyDetailViewModel: PartyDetailViewModel = viewModel(
                                 factory = viewModelFactory {
                                     initializer {
@@ -128,9 +155,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
 
-                            // Ora possiamo passare il ViewModel alla nostra UI
                             PartyDetailScreen(
-                                viewModel = partyDetailViewModel
+                                viewModel = partyDetailViewModel,
+                                currentSteps = stepData.steps
                             )
                         }
                     }
@@ -144,6 +171,20 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    }
+
+    private fun startStepService() {
+        val intent = Intent(this, StepService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    private fun stopStepService() {
+        val intent = Intent(this, StepService::class.java)
+        stopService(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
