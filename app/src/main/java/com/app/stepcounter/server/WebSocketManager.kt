@@ -19,7 +19,7 @@ object WebSocketManager {
     // 1. Rimuoviamo il vecchio 'updateListener'.
     // Al suo posto, creiamo un MutableSharedFlow.
     // Questo emetterà i messaggi a tutti coloro che si "iscrivono" per ascoltare.
-    private val _messages = MutableSharedFlow<String>()
+    private val _messages = MutableSharedFlow<String>(replay = 1)
     val messages = _messages.asSharedFlow()
 
     private const val SERVER_URL = "ws://10.0.2.2:3000"
