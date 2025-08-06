@@ -236,7 +236,7 @@ fun StepPartyListScreenPreview_Empty() {
     StepPartyListScreen(
         parties = emptyList(),
         uiState = PartyUiState(isLoading = false, errorMessage = null),
-        onCreatePartyClick = {} as (String, String) -> Unit,
+        onCreatePartyClick = { name, password -> },
         onPartyClick = {},
         onDeleteParty = {},
         onJoinPartyClick = {}
@@ -255,7 +255,7 @@ fun StepPartyListScreenPreview_WithParties() {
     StepPartyListScreen(
         parties = sampleParties,
         uiState = PartyUiState(isLoading = false, errorMessage = null),
-        onCreatePartyClick = {} as (String, String) -> Unit,
+        onCreatePartyClick = { name, password -> },
         onPartyClick = {},
         onDeleteParty = {},
         onJoinPartyClick = {}
