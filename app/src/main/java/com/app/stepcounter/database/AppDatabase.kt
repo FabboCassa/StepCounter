@@ -6,11 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.app.stepcounter.database.dao.PartyDao
-import com.app.stepcounter.domain.model.PartyData
 import com.app.stepcounter.domain.converter.Converters
+import com.app.stepcounter.domain.model.PartyEntity
 
-@Database(entities = [PartyData::class], version = 1)
-@TypeConverters(Converters::class) // Link the converter
+@Database(entities = [PartyEntity::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun partyDao(): PartyDao

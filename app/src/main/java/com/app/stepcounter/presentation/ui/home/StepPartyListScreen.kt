@@ -205,12 +205,22 @@ fun CreatePartyDialog(
         title = { Text("Crea nuovo Party") },
         text = {
             Column {
-                Text("Inserisci il nome del party:")
-                Spacer(modifier = Modifier.height(8.dp))
+                // 1. Campo di testo per il NOME
+                OutlinedTextField(
+                    value = partyName,
+                    onValueChange = { partyName = it },
+                    label = { Text("Nome party") },
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 2. Campo di testo per la PASSWORD
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password (opzionale)") }
+                    label = { Text("Password (opzionale)") },
+                    singleLine = true
                 )
             }
         },

@@ -6,36 +6,34 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.app.stepcounter.domain.model.PartyData
+import com.app.stepcounter.domain.model.PartyEntity // <-- Assicurati di importare PartyEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PartyDao {
     @Query("SELECT * FROM party_table ORDER BY createdAt DESC")
-    fun getAllParties(): Flow<List<PartyData>>
+    fun getAllParties(): Flow<List<PartyEntity>> 
 
-    // ✅ AGGIUNGI QUESTO METODO per trovare un party tramite ID
     @Query("SELECT * FROM party_table WHERE id = :partyId")
-    suspend fun getPartyById(partyId: String): PartyData?
+    suspend fun getPartyById(partyId: String): PartyEntity? 
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addParty(party: PartyData)
+    suspend fun addParty(party: PartyEntity) 
 
-    // ✅ AGGIUNGI QUESTO METODO per aggiornare un party esistente
     @Update
-    suspend fun updateParty(party: PartyData)
+    suspend fun updateParty(party: PartyEntity) 
 
     @Query("DELETE FROM party_table WHERE id = :partyId")
     suspend fun removeParty(partyId: String)
+
     @Query("DELETE FROM party_table")
     suspend fun deleteAllParties()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(parties: List<PartyData>)
+    suspend fun insertAll(parties: List<PartyEntity>) 
 
-    // ✅ AGGIUNGI QUESTO METODO
     @Transaction
-    suspend fun replaceAllParties(parties: List<PartyData>) {
+    suspend fun replaceAllParties(parties: List<PartyEntity>) { 
         deleteAllParties()
         insertAll(parties)
     }
