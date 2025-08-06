@@ -19,16 +19,17 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun JoinPartyDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String, String) -> Unit
 ) {
     var inviteCode by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Unisciti a un Party") },
         text = {
             Column {
-                Text("Chiedi a un amico il codice di invito e inseriscilo qui:")
+                Text("Inserisci il codice di invito che hai ricevuto:")
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = inviteCode,
@@ -36,11 +37,18 @@ fun JoinPartyDialog(
                     label = { Text("Codice di invito") },
                     singleLine = true
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password (se richiesta)") },
+                    singleLine = true
+                )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(inviteCode) },
+                onClick = { onConfirm(inviteCode.trim(), password) },
                 enabled = inviteCode.isNotBlank()
             ) {
                 Text("Unisciti")
@@ -59,6 +67,6 @@ fun JoinPartyDialog(
 fun JoinPartyDialogPreview() {
     JoinPartyDialog(
         onDismiss = {},
-        onConfirm = {}
+        onConfirm = { _, _ -> }
     )
 }

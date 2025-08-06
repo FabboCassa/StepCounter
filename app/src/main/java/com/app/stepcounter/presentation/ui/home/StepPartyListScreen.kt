@@ -56,7 +56,7 @@ fun StepPartyListScreen(
     onCreatePartyClick: (String, String) -> Unit,
     onPartyClick: (PartyData) -> Unit,
     onDeleteParty: (String) -> Unit,
-    onJoinPartyClick: (String) -> Unit
+    onJoinPartyClick: (String, String) -> Unit,
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showJoinDialog by remember { mutableStateOf(false) }
@@ -184,8 +184,8 @@ fun StepPartyListScreen(
     if (showJoinDialog) {
         JoinPartyDialog(
             onDismiss = { showJoinDialog = false },
-            onConfirm = { code ->
-                onJoinPartyClick(code.trim()) // Usiamo trim() per rimuovere spazi
+            onConfirm = { code, password ->
+                onJoinPartyClick(code, password)
                 showJoinDialog = false
             }
         )
@@ -249,7 +249,7 @@ fun StepPartyListScreenPreview_Empty() {
         onCreatePartyClick = { name, password -> },
         onPartyClick = {},
         onDeleteParty = {},
-        onJoinPartyClick = {}
+        onJoinPartyClick = {_ , _ ->}
     )
 }
 
@@ -268,7 +268,7 @@ fun StepPartyListScreenPreview_WithParties() {
         onCreatePartyClick = { name, password -> },
         onPartyClick = {},
         onDeleteParty = {},
-        onJoinPartyClick = {}
+        onJoinPartyClick = {_ , _ ->}
     )
 }
 

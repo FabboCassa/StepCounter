@@ -71,7 +71,7 @@ class PartyViewModel(
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 
-    fun joinPartyWithCode(code: String) {
+    fun joinPartyWithCode(code: String, password: String) {
         UserPreferences.getUser()?.let { user ->
             val userParticipant = Participant(userId = user.id, name = user.name)
             val message = """
@@ -79,7 +79,8 @@ class PartyViewModel(
               "action": "join_party_with_code",
               "payload": {
                 "inviteCode": "$code",
-                "user": ${Json.encodeToString(userParticipant)}
+                "user": ${Json.encodeToString(userParticipant)},
+                "password": "$password"
               }
             }
         """.trimIndent()

@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                                 onCreatePartyClick = { partyName, password ->
                                     partyViewModel.createParty(partyName, password)
                                 },
-                                onJoinPartyClick = { code -> partyViewModel.joinPartyWithCode(code) },
+                                onJoinPartyClick = { code, pwd -> partyViewModel.joinPartyWithCode(code, pwd) },
                                 onPartyClick = { party -> navController.navigate("party_detail/${party.id}") },
                                 onDeleteParty = { partyId -> partyViewModel.deleteParty(partyId) }
                             )
