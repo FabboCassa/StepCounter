@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.json.Json
 import java.util.UUID
+
 class PartyViewModel(
     private val repository: PartyRepository
 ) : ViewModel() {
@@ -36,12 +37,13 @@ class PartyViewModel(
         }
     }
 
-    fun createParty(name: String) {
+    fun createParty(name: String, password: String) {
         UserPreferences.getUser()?.let { user ->
             val newParty = PartyData(
                 id = UUID.randomUUID().toString(),
                 name = name,
-                participants = listOf(Participant(userId = user.id, name = user.name, steps = 0)),
+                participants = listOf(Participant(userId = user.id, name = user.name)),
+                password = password.ifBlank { null },
                 createdAt = System.currentTimeMillis()
             )
 
@@ -57,13 +59,12 @@ class PartyViewModel(
     }
 
     fun deleteParty(partyId: String) {
-        val message = """
-            {
-              "action": "delete_party",
-              "payload": { "partyId": "$partyId" }
-            }
-        """.trimIndent()
-        WebSocketManager.sendMessage(message)
+        UserPreferences.getUser()?.let { user ->
+            val message = """
+            { "action":"delete_party", "payload":{ "partyId":"$partyId", "userId":"${user.id}" } }
+        """
+            WebSocketManager.sendMessage(message)
+        }
     }
 
     fun clearError() {

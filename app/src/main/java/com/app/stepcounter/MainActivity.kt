@@ -127,7 +127,9 @@ class MainActivity : ComponentActivity() {
                             StepPartyListScreen(
                                 parties = parties,
                                 uiState = partyUiState,
-                                onCreatePartyClick = { partyName -> partyViewModel.createParty(partyName) },
+                                onCreatePartyClick = { partyName, password ->
+                                    partyViewModel.createParty(partyName, password)
+                                },
                                 onJoinPartyClick = { code -> partyViewModel.joinPartyWithCode(code) },
                                 onPartyClick = { party -> navController.navigate("party_detail/${party.id}") },
                                 onDeleteParty = { partyId -> partyViewModel.deleteParty(partyId) }

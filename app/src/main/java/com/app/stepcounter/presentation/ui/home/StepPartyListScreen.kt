@@ -53,7 +53,7 @@ import com.app.stepcounter.presentation.viewmodel.PartyUiState
 fun StepPartyListScreen(
     parties: List<PartyData>,
     uiState: PartyUiState,
-    onCreatePartyClick: (String) -> Unit,
+    onCreatePartyClick: (String, String) -> Unit,
     onPartyClick: (PartyData) -> Unit,
     onDeleteParty: (String) -> Unit,
     onJoinPartyClick: (String) -> Unit
@@ -174,8 +174,8 @@ fun StepPartyListScreen(
     if (showCreateDialog) {
         CreatePartyDialog(
             onDismiss = { showCreateDialog = false },
-            onConfirm = { name ->
-                onCreatePartyClick(name)
+            onConfirm = { partyName, password ->
+                onCreatePartyClick(partyName, password)
                 showCreateDialog = false
             }
         )
@@ -195,9 +195,10 @@ fun StepPartyListScreen(
 @Composable
 fun CreatePartyDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String, String) -> Unit
 ) {
     var partyName by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -207,16 +208,15 @@ fun CreatePartyDialog(
                 Text("Inserisci il nome del party:")
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = partyName,
-                    onValueChange = { partyName = it },
-                    label = { Text("Nome party") },
-                    singleLine = true
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password (opzionale)") }
                 )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(partyName) },
+                onClick = { onConfirm(partyName, password) },
                 enabled = partyName.isNotBlank()
             ) {
                 Text("Crea")
@@ -236,7 +236,7 @@ fun StepPartyListScreenPreview_Empty() {
     StepPartyListScreen(
         parties = emptyList(),
         uiState = PartyUiState(isLoading = false, errorMessage = null),
-        onCreatePartyClick = {},
+        onCreatePartyClick = {} as (String, String) -> Unit,
         onPartyClick = {},
         onDeleteParty = {},
         onJoinPartyClick = {}
@@ -255,7 +255,7 @@ fun StepPartyListScreenPreview_WithParties() {
     StepPartyListScreen(
         parties = sampleParties,
         uiState = PartyUiState(isLoading = false, errorMessage = null),
-        onCreatePartyClick = {},
+        onCreatePartyClick = {} as (String, String) -> Unit,
         onPartyClick = {},
         onDeleteParty = {},
         onJoinPartyClick = {}
