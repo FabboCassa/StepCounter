@@ -4,11 +4,14 @@ import com.app.stepcounter.WebSocketManager
 import com.app.stepcounter.database.dao.PartyDao
 import com.app.stepcounter.domain.model.Participant
 import com.app.stepcounter.domain.model.PartyData
+import com.app.stepcounter.domain.repository.NavigationEvent
 import com.app.stepcounter.domain.repository.PartyRepository
 import com.app.stepcounter.server.response.ServerResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -16,6 +19,8 @@ import kotlinx.serialization.json.decodeFromJsonElement
 class PartyRepositoryImpl(private val partyDao: PartyDao, private val applicationScope: CoroutineScope) : PartyRepository {
 
     private val _activePartyState = MutableStateFlow<PartyData?>(null)
+    private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
+    override val navigationEvents = _navigationEvents.asSharedFlow()
 
     init {
         // 2. Usa lo scope passato dal costruttore, non uno nuovo
@@ -30,37 +35,25 @@ class PartyRepositoryImpl(private val partyDao: PartyDao, private val applicatio
     // In PartyRepositoryImpl.kt
 
     private suspend fun handleWebSocketMessage(message: String) {
-        // Log di base per vedere se il metodo viene chiamato
-        println("--- REPOSITORY: handleWebSocketMessage chiamato con: ---")
-        println(message)
-
         try {
             val json = Json { ignoreUnknownKeys = true }
-
-            println("--- REPOSITORY: Passo 1 - Provo a decodificare ServerResponse...")
             val serverResponse = json.decodeFromString<ServerResponse>(message)
-            println("--- REPOSITORY: Passo 2 - Decodifica ServerResponse OK. Tipo: ${serverResponse.type}")
 
-            if (serverResponse.type == "all_parties_list" && serverResponse.payload != null) {
-                println("--- REPOSITORY: Passo 3 - Riconosciuto 'all_parties_list'. Provo a decodificare la lista dei party...")
-                val serverParties = json.decodeFromJsonElement<List<PartyData>>(serverResponse.payload)
-                println("--- REPOSITORY: Passo 4 - Decodifica lista OK. Trovati ${serverParties.size} party.")
-
-                // Chiamata al DAO per aggiornare il database
-                partyDao.replaceAllParties(serverParties)
-
-                println("--- REPOSITORY: Passo 5 - Chiamata a replaceAllParties ESEGUITA. Il DB è aggiornato.")
-
-            } else if (serverResponse.type == "party_state_update" && serverResponse.payload != null) {
-                println("--- REPOSITORY: Riconosciuto 'party_state_update'.")
-                val partyData = json.decodeFromJsonElement<PartyData>(serverResponse.payload)
-                _activePartyState.value = partyData
-                println("--- REPOSITORY: Stato del party attivo aggiornato.")
+            if (serverResponse.type == "party_created_success" && serverResponse.payload != null) {
+                val newParty = json.decodeFromJsonElement<PartyData>(serverResponse.payload)
+                partyDao.addParty(newParty) // Aggiungiamo il party al DB locale
+                // Emettiamo l'evento per navigare
+                _navigationEvents.emit(NavigationEvent.ToPartyDetail(newParty.id))
             }
 
+            if (serverResponse.type == "all_parties_list" && serverResponse.payload != null) {
+                val serverParties = json.decodeFromJsonElement<List<PartyData>>(serverResponse.payload)
+                partyDao.replaceAllParties(serverParties)
+            } else if (serverResponse.type == "party_state_update" && serverResponse.payload != null) {
+                val partyData = json.decodeFromJsonElement<PartyData>(serverResponse.payload)
+                _activePartyState.value = partyData
+            }
         } catch (e: Exception) {
-            println("--- !!! REPOSITORY: ERRORE CATTURATO NEL TRY-CATCH !!! ---")
-            // Questo stamperà l'errore completo e dettagliato, non solo il messaggio
             e.printStackTrace()
         }
     }

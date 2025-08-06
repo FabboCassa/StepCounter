@@ -11,5 +11,6 @@ data class PartyData(
     val id: String,
     val name: String,
     val participants: List<Participant>,
-    val createdAt: Long
+    val createdAt: Long,
+    val inviteCode: String? = null
 )

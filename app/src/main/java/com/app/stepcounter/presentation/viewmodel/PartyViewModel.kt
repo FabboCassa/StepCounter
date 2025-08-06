@@ -18,7 +18,7 @@ class PartyViewModel(
     private val repository: PartyRepository
 ) : ViewModel() {
 
-    // Questo non cambia. La UI osserva i dati forniti dal repository.
+    val navigationEvents = repository.navigationEvents
     val parties: StateFlow<List<PartyData>> = repository.getAllParties()
         .stateIn(
             scope = viewModelScope,
@@ -29,14 +29,14 @@ class PartyViewModel(
     private val _uiState = MutableStateFlow(PartyUiState())
     val uiState: StateFlow<PartyUiState> = _uiState.asStateFlow()
 
-    // L'init block è ora molto più semplice, non deve più gestire il listener.
     init {
-        // Possiamo assicurarci che il WebSocket sia attivo, sebbene lo faccia già il repository.
-        WebSocketManager.start()
+        UserPreferences.getUser()?.let { user ->
+            val message = """{ "action": "get_my_parties", "payload": { "userId": "${user.id}" } }"""
+            WebSocketManager.sendMessage(message)
+        }
     }
 
     fun createParty(name: String) {
-        // Prende l'utente salvato per includerlo come primo partecipante
         UserPreferences.getUser()?.let { user ->
             val newParty = PartyData(
                 id = UUID.randomUUID().toString(),
@@ -45,7 +45,6 @@ class PartyViewModel(
                 createdAt = System.currentTimeMillis()
             )
 
-            // Il ViewModel costruisce il messaggio...
             val message = """
                 {
                   "action": "create_party",
@@ -53,7 +52,6 @@ class PartyViewModel(
                 }
             """.trimIndent()
 
-            // ...e lo invia. Non si preoccupa della risposta, quella la gestirà il Repository.
             WebSocketManager.sendMessage(message)
         }
     }
@@ -70,6 +68,22 @@ class PartyViewModel(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    fun joinPartyWithCode(code: String) {
+        UserPreferences.getUser()?.let { user ->
+            val userParticipant = Participant(userId = user.id, name = user.name)
+            val message = """
+            {
+              "action": "join_party_with_code",
+              "payload": {
+                "inviteCode": "$code",
+                "user": ${Json.encodeToString(userParticipant)}
+              }
+            }
+        """.trimIndent()
+            WebSocketManager.sendMessage(message)
+        }
     }
 
 }

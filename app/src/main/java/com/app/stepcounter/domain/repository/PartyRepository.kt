@@ -20,4 +20,9 @@ interface PartyRepository {
     fun cleanUpPartyDetailListener()
 
     suspend fun replaceAllParties(parties: List<PartyData>)
+    val navigationEvents: Flow<NavigationEvent>
+}
+
+sealed class NavigationEvent {
+    data class ToPartyDetail(val partyId: String) : NavigationEvent()
 }

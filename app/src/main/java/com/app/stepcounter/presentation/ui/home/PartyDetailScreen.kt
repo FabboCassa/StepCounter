@@ -17,10 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +40,8 @@ import com.app.stepcounter.presentation.viewmodel.PartyDetailViewModel
 @Composable
 fun PartyDetailScreen(viewModel: PartyDetailViewModel,  currentSteps: Int) {
     // Osserviamo lo stato del party dal ViewModel
-    val party by viewModel.partyState.collectAsState()
+    val partyState by viewModel.partyState.collectAsState()
+    val currentParty = partyState
     val context = LocalContext.current
 
     LaunchedEffect(currentSteps) {
@@ -50,55 +49,65 @@ fun PartyDetailScreen(viewModel: PartyDetailViewModel,  currentSteps: Int) {
     }
 
     // Mostra un indicatore di caricamento finché non arrivano i dati del party dal server
-    if (party == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-            Text("In attesa dei dati del party...", modifier = Modifier.padding(top = 60.dp))
-        }
-        return
-    }
-
-    // Ordina i partecipanti per passi, dal maggiore al minore
-    val sortedParticipants = party!!.participants.sortedByDescending { it.steps }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // --- Titolo del Party ---
-        Text(
-            text = party!!.name,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // --- Sezione 1: Grafico dei Passi ---
-        Text("Classifica", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        StepGraph(participants = sortedParticipants)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // --- Sezione 2: Lista Partecipanti ---
-        Text("Partecipanti", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(party!!.participants) { participant ->
-                ParticipantCard(participant = participant)
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // --- Sezione 3: Pulsante Invita ---
-        Button(
-            onClick = { viewModel.inviteToParty(context) },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+    if (currentParty == null) {
+        // Se 'party' è null, mostriamo un indicatore di caricamento.
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = Icons.Default.Share, contentDescription = "Invita")
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Invita Amici con un Link")
+            CircularProgressIndicator()
+            Text(
+                "Caricamento dei dati del party...",
+                modifier = Modifier.padding(top = 80.dp)
+            )
+        }
+    } else {
+
+        // Ordina i partecipanti per passi, dal maggiore al minore
+        val sortedParticipants = currentParty .participants.sortedByDescending { it.steps }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // --- Titolo del Party ---
+            Text(
+                text = currentParty.name,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- Sezione 1: Grafico dei Passi ---
+            Text("Classifica", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            StepGraph(participants = sortedParticipants)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- Sezione 2: Lista Partecipanti ---
+            Text("Partecipanti", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(currentParty.participants) { participant ->
+                    ParticipantCard(participant = participant)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Sezione 3: Pulsante Invita ---
+            Button(
+                onClick = { viewModel.inviteToParty(context) },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Icon(imageVector = Icons.Default.Share, contentDescription = "Invita")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Invita Amici con un Link")
+            }
         }
     }
 }

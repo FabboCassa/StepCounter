@@ -30,6 +30,7 @@ import com.app.stepcounter.data.local.UserPreferences
 import com.app.stepcounter.data.repository.PartyRepositoryImpl
 import com.app.stepcounter.data.service.StepService
 import com.app.stepcounter.database.AppDatabase
+import com.app.stepcounter.domain.repository.NavigationEvent
 import com.app.stepcounter.presentation.ui.home.PartyDetailScreen
 import com.app.stepcounter.presentation.ui.home.ProfileSetupScreen
 import com.app.stepcounter.presentation.ui.home.StepHomeScreen
@@ -127,15 +128,27 @@ class MainActivity : ComponentActivity() {
                                 parties = parties,
                                 uiState = partyUiState,
                                 onCreatePartyClick = { partyName -> partyViewModel.createParty(partyName) },
+                                onJoinPartyClick = { code -> partyViewModel.joinPartyWithCode(code) },
                                 onPartyClick = { party -> navController.navigate("party_detail/${party.id}") },
                                 onDeleteParty = { partyId -> partyViewModel.deleteParty(partyId) }
                             )
+
+                            LaunchedEffect(Unit) {
+                                partyViewModel.navigationEvents.collect { event ->
+                                    when (event) {
+                                        // Se il ViewModel emette l'evento "naviga al dettaglio"...
+                                        is NavigationEvent.ToPartyDetail -> {
+                                            // ...usiamo il navController per eseguire la navigazione.
+                                            navController.navigate("party_detail/${event.partyId}")
+                                        }
+                                    }
+                                }
+                            }
                         }
                         composable("party_detail/{partyId}") {
                             val partyDetailViewModel: PartyDetailViewModel = viewModel(
                                 factory = viewModelFactory {
                                     initializer {
-                                        // --- 4. RIUSA l'istanza partyRepository dell'Activity ---
                                         PartyDetailViewModel(partyRepository, createSavedStateHandle())
                                     }
                                 }
