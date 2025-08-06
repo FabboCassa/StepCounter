@@ -142,15 +142,6 @@ fun StepPartyListScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-
-        // Pulsante Crea Party
-        StepPartyCard(
-            party = null,
-            onCreatePartyClick = { showCreateDialog = true }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)

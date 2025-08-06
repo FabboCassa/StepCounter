@@ -51,22 +51,18 @@ class PartyDetailViewModel(
         repository.cleanUpPartyDetailListener()
     }
 
-    fun inviteToParty(context: Context) {
-        // Usa il valore del 'partyState' pubblico, non del vecchio '_partyState'
+    fun shareInviteCode(context: Context) {
         val party = partyState.value ?: return
+        val inviteCode = party.inviteCode ?: "Codice non disponibile"
 
-        // Cambia il dominio per usare il nuovo schema
-        val domain = "https://stepcounter.app"
-        val link = "$domain/join/${party.id}"
-
-
+        // Creiamo un Intent per condividere semplice testo
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "Unisciti al mio party su StepCounter!")
-            putExtra(Intent.EXTRA_TEXT, "Ehi! Unisciti al mio party '${party.name}' su StepCounter usando questo link: $link")
+            putExtra(Intent.EXTRA_SUBJECT, "Codice invito per il party '${party.name}'")
+            putExtra(Intent.EXTRA_TEXT, "Ehi! Unisciti al mio party '${party.name}' su StepCounter. Il codice di invito è: $inviteCode")
         }
 
-        val chooser = Intent.createChooser(intent, "Invita amici con...")
+        val chooser = Intent.createChooser(intent, "Condividi codice con...")
         context.startActivity(chooser)
     }
 }

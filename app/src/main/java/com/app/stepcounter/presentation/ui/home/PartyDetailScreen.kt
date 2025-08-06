@@ -120,13 +120,16 @@ fun PartyDetailScreen(viewModel: PartyDetailViewModel,  currentSteps: Int) {
 
             // --- Sezione 3: Pulsante Invita ---
             Button(
-                onClick = { viewModel.inviteToParty(context) },
+                // Chiameremo una nuova funzione più appropriata
+                onClick = { viewModel.shareInviteCode(context) },
                 modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
-                Icon(imageVector = Icons.Default.Share, contentDescription = "Invita")
+                Icon(imageVector = Icons.Default.Share, contentDescription = "Condividi")
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Invita Amici con un Link")
+                // ✅ Aggiorniamo il testo
+                Text("Condividi Codice Invito")
             }
+
         }
     }
 }
