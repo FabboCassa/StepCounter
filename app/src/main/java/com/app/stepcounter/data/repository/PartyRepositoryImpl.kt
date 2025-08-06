@@ -26,7 +26,6 @@ class PartyRepositoryImpl(private val partyDao: PartyDao, private val applicatio
     override val navigationEvents = _navigationEvents.asSharedFlow()
 
     init {
-        // 2. Usa lo scope passato dal costruttore, non uno nuovo
         applicationScope.launch {
             WebSocketManager.messages.collect { message ->
                 handleWebSocketMessage(message)
@@ -115,5 +114,4 @@ class PartyRepositoryImpl(private val partyDao: PartyDao, private val applicatio
         _activePartyState.value = null
     }
 
-    // ✅ 2. CANCELLA COMPLETAMENTE i vecchi metodi onWebSocketUpdate e onWebSocketError
 }

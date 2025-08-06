@@ -7,9 +7,6 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
-
-// L'interfaccia WebSocketUpdateListener non è più necessaria e può essere cancellata.
 
 object WebSocketManager {
 
@@ -22,7 +19,10 @@ object WebSocketManager {
     private val _messages = MutableSharedFlow<String>(replay = 1)
     val messages = _messages.asSharedFlow()
 
-    private const val SERVER_URL = "ws://10.0.2.2:3000"
+
+    // --- USA QUESTO PER L'EMULATORE ---
+    // private const val SERVER_URL = "ws://10.0.2.2:3000"
+    private const val SERVER_URL = "ws://192.168.1.34:3000"
 
     // 2. I metodi setListener e removeListener non sono più necessari.
 

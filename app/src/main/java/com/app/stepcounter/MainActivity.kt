@@ -44,12 +44,10 @@ import com.app.stepcounter.ui.theme.StepCounterTheme
 
 class MainActivity : ComponentActivity() {
 
-    // --- 1. Creiamo le dipendenze UNA SOLA VOLTA come proprietà dell'Activity ---
     private val appScope by lazy { (application as StepCounterApp).applicationScope }
     private val database by lazy { AppDatabase.getInstance(this) }
     private val partyRepository by lazy { PartyRepositoryImpl(database.partyDao(), appScope) }
 
-    // --- 2. Creiamo una Factory per passare il nostro repository singolo al PartyViewModel ---
     private val partyViewModelFactory by lazy {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -62,7 +60,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // --- 3. I ViewModel ora usano le dipendenze definite sopra ---
     private val stepViewModel: StepCountViewModel by viewModels()
     private val partyViewModel: PartyViewModel by viewModels { partyViewModelFactory }
 
@@ -127,9 +124,7 @@ class MainActivity : ComponentActivity() {
                             StepPartyListScreen(
                                 parties = parties,
                                 uiState = partyUiState,
-                                onCreatePartyClick = { partyName, password ->
-                                    partyViewModel.createParty(partyName, password)
-                                },
+                                onCreatePartyClick = { name, pwd -> partyViewModel.createParty(name, pwd) },
                                 onJoinPartyClick = { code, pwd -> partyViewModel.joinPartyWithCode(code, pwd) },
                                 onPartyClick = { party -> navController.navigate("party_detail/${party.id}") },
                                 onDeleteParty = { partyId -> partyViewModel.deleteParty(partyId) }
@@ -138,9 +133,7 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) {
                                 partyViewModel.navigationEvents.collect { event ->
                                     when (event) {
-                                        // Se il ViewModel emette l'evento "naviga al dettaglio"...
                                         is NavigationEvent.ToPartyDetail -> {
-                                            // ...usiamo il navController per eseguire la navigazione.
                                             navController.navigate("party_detail/${event.partyId}")
                                         }
                                     }

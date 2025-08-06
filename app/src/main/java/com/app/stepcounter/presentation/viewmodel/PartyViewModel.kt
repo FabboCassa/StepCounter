@@ -31,6 +31,10 @@ class PartyViewModel(
     val uiState: StateFlow<PartyUiState> = _uiState.asStateFlow()
 
     init {
+        requestMyParties()
+    }
+
+    fun requestMyParties() {
         UserPreferences.getUser()?.let { user ->
             val message = """{ "action": "get_my_parties", "payload": { "userId": "${user.id}" } }"""
             WebSocketManager.sendMessage(message)
@@ -40,20 +44,12 @@ class PartyViewModel(
     fun createParty(name: String, password: String) {
         UserPreferences.getUser()?.let { user ->
             val newParty = PartyData(
-                id = UUID.randomUUID().toString(),
-                name = name,
+                id = UUID.randomUUID().toString(), name = name,
                 participants = listOf(Participant(userId = user.id, name = user.name)),
-                password = password.ifBlank { null },
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
+                password = password.ifBlank { null }
             )
-
-            val message = """
-                {
-                  "action": "create_party",
-                  "payload": ${Json.encodeToString(newParty)}
-                }
-            """.trimIndent()
-
+            val message = """{ "action": "create_party", "payload": ${Json.encodeToString(newParty)} }"""
             WebSocketManager.sendMessage(message)
         }
     }
@@ -75,15 +71,15 @@ class PartyViewModel(
         UserPreferences.getUser()?.let { user ->
             val userParticipant = Participant(userId = user.id, name = user.name)
             val message = """
-            {
-              "action": "join_party_with_code",
-              "payload": {
-                "inviteCode": "$code",
-                "user": ${Json.encodeToString(userParticipant)},
-                "password": "$password"
-              }
-            }
-        """.trimIndent()
+                {
+                  "action": "join_party_with_code",
+                  "payload": {
+                    "inviteCode": "$code",
+                    "user": ${Json.encodeToString(userParticipant)},
+                    "password": "$password"
+                  }
+                }
+            """.trimIndent()
             WebSocketManager.sendMessage(message)
         }
     }
