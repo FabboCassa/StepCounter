@@ -21,8 +21,8 @@ object WebSocketManager {
 
 
     // --- USA QUESTO PER L'EMULATORE ---
-    // private const val SERVER_URL = "ws://10.0.2.2:3000"
-    private const val SERVER_URL = "ws://192.168.1.34:3000"
+    private const val SERVER_URL = "ws://10.0.2.2:3000"
+    //private const val SERVER_URL = "ws://192.168.1.34:3000"
 
     // 2. I metodi setListener e removeListener non sono più necessari.
 
@@ -77,12 +77,4 @@ object WebSocketManager {
         }
     }
 
-    /**
-     * Chiude la connessione WebSocket.
-     */
-    fun stop() {
-        println("Chiusura connessione WebSocket.")
-        webSocket?.close(1000, "Connessione chiusa manualmente dall'utente.")
-        webSocket = null
-    }
 }
